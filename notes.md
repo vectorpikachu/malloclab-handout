@@ -8,9 +8,9 @@ $$
 P(U,T)=100(w\min (1, \frac{U-U_{min}}{U_{max}-U_{min}})+ (1-w)\min (1, \frac{T-T_{min}}{T{max}-T_{min}}))
 $$
 
-其中$U$为utilization，$T$为throughput，$w$为权重，$U_{min}$为最小utilization，$U_{max}$为最大utilization，$T_{min}$为最小throughput，$T_{max}$为最大throughput，对于一个优化的malloc包来说。
+其中 $U$ 为utilization， $T$ 为throughput， $w$ 为权重， $U_{min}$ 为最小utilization， $U_{max}$ 为最大utilization， $T_{min}$ 为最小throughput， $T_{max}$ 为最大throughput，对于一个优化的malloc包来说。
 
-$w=0.60$，$(U_{min},U_{max},T_{min},T_{max})=(0.70,0.90,4000\text{Kop/s},14000\text{Kop/s})$。
+$w=0.60$ ， $(U_{min},U_{max},T_{min},T_{max})=(0.70,0.90,4000\text{Kop/s},14000\text{Kop/s})$ 。
 
 ```
 if ($perfindex < 50) {
