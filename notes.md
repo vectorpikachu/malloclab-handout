@@ -449,3 +449,7 @@ vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriv
 vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/expr.rep
 vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ 
 ```
+
+其实不如从textbook代码来爆改。
+
+第一步，
