@@ -13,7 +13,7 @@
 
 /* If you want debugging output, use the following macro.  When you hand
  * in, remove the #define DEBUG line. */
-#define DEBUG
+// #define DEBUG
 #ifdef DEBUG
 # define dbg_printf(...) printf(__VA_ARGS__)
 #else
@@ -132,9 +132,9 @@ int mm_init(void)
     if (extend_heap(CHUNKSIZE/WSIZE) == NULL) 
         return -1;
 
-    printf("\n");
-    printf("mm_init finished!\n");
-    mm_checkheap(__LINE__);
+    // printf("\n");
+    // printf("mm_init finished!\n");
+    // mm_checkheap(__LINE__);
 
     return 0;
 }
@@ -220,22 +220,38 @@ void *realloc(void *ptr, size_t size)
         return mm_malloc(size);
     }
 
-    newptr = mm_malloc(size);
-
-    /* If realloc() fails the original block is left untouched  */
-    if(!newptr) {
-        return 0;
+    size_t asize;
+    if (size <= DSIZE)                                          
+        asize = 2*DSIZE;                                        
+    else
+        asize = DSIZE * ((size + (DSIZE) + (DSIZE-1)) / DSIZE);
+    
+    oldsize = GET_SIZE(HDRP(ptr));
+    if (asize + 2*DSIZE <= oldsize) {
+        /* 旧的块的大小更大 */
+        /* 把size - oldsize之间的块都free掉剩下的依然保留 */
+        PUT(HDRP(ptr), PACK(asize, 1));
+        PUT(FTRP(ptr), PACK(asize, 1));
+        newptr = NEXT_BLKP(ptr);
+        PUT(HDRP(newptr), PACK(oldsize - asize, 0));
+        PUT(FTRP(newptr), PACK(oldsize - asize, 0));
+        free_list_insert(newptr);
+        return ptr;
+    }
+    else if (asize <= oldsize) {
+        /* 旧的块更大，但是没有达到可以再分割出一块来的情况 */
+        /* 那就还是这样吧，没必要修改 */
+        return ptr;
+    }
+    else {
+        /* 新的大小要更大了，这个时候不得不分配新的块了 */
+        newptr = mm_malloc(size);
+        memcpy(newptr, ptr, oldsize);
+        mm_free(ptr);
+        return newptr;
     }
 
-    /* Copy the old data. */
-    oldsize = GET_SIZE(HDRP(ptr));
-    if(size < oldsize) oldsize = size;
-    memcpy(newptr, ptr, oldsize);
-
-    /* Free the old block. */
-    mm_free(ptr);
-
-    return newptr;
+    return NULL;
 }
 /*
  * calloc - you may want to look at mm-naive.c
