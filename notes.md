@@ -106,3 +106,346 @@ The realloc() function changes the size of the memory block pointed to by ptr to
        to  zero,  and ptr is not NULL, then the call is equivalent to free(ptr).  Unless ptr is NULL, it must have been returned by an earlier
        call to malloc(), calloc(), or realloc().  If the area pointed to was moved, a free(ptr) is done.
 ```
+
+似乎指向块里的指针都是`char *`的，一般的指针可以都设置成为`void *`的。
+
+我们刚才用网上给出的方法解决了基本的代码，优化啥的还没做。
+
+但是！！！！为什么网络上的都在使用`WSIZE`的大小来存储地址呢？他们的做法是不对的！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+
+所以我们可以注意到给出的Writeup里面有这样的一句话：
+
+```
+Because we are running on 64-bit machines, your allocator must be coded accordingly, with one exception: the size of the heap will never be greater than or equal to 232 bytes. This does not imply anything about the location of the heap, but there is a neat optimization that can be done using this information. However, be very, very careful if you decide to take advantage of this fact. There are certain invalid optimizations that will pass all the driver checks because of the limited range of functionality we can check in a reasonable amount of time, so we will be manually looking over your code for these violations.
+```
+
+所以最后就是说，我们实际上可以把和地址有关的地方都改变成为`ptr - the_very_first_address`的形式，这样就可以节省很多空间了。
+
+```bash
+Using default tracefiles in ./traces/
+Measuring performance with a cycle counter.
+Processor clock rate ~= 2000.0 MHz
+mm_init called
+heap_listp = 0x800000000
+heap_listp = 0x800000028
+new block bp = 0x800000030
+new block size = 4096
+segragated_list_insert called by 0x800000030
+head = 0x80000001c
+GET(head) = 52
+actual address in head = 0x800000030
+ptr's pred = 0x80000001c
+ptr's succ = (nil)
+Check heap at line 445
+Heap (0x800000028):
+Prologue header: [8:1] footer: [8:1]
+0x800000028: header: [8:1] footer: [8:1]
+0x800000030: header: [4096:0] footer: [4096:0]
+Epilogue header: [0:1]
+segragated_listp + 0 * WSIZE = 0x800000000
+head = 0x800000000
+head -> (nil)
+segragated_listp + 1 * WSIZE = 0x800000004
+head = 0x800000004
+head -> (nil)
+segragated_listp + 2 * WSIZE = 0x800000008
+head = 0x800000008
+head -> (nil)
+segragated_listp + 3 * WSIZE = 0x80000000c
+head = 0x80000000c
+head -> (nil)
+segragated_listp + 4 * WSIZE = 0x800000010
+head = 0x800000010
+head -> (nil)
+segragated_listp + 5 * WSIZE = 0x800000014
+head = 0x800000014
+head -> (nil)
+segragated_listp + 6 * WSIZE = 0x800000018
+head = 0x800000018
+head -> (nil)
+segragated_listp + 7 * WSIZE = 0x80000001c
+head = 0x80000001c
+head -> 0x800000030
+cur = 0x800000030
+cur's pred = 0x80000001c
+cur's succ = (nil)
+segragated_listp + 8 * WSIZE = 0x800000020
+head = 0x800000020
+head -> (nil)
+Check heap at line 364
+Heap (0x800000028):
+Prologue header: [8:1] footer: [8:1]
+0x800000028: header: [8:1] footer: [8:1]
+0x800000030: header: [4096:0] footer: [4096:0]
+Epilogue header: [0:1]
+segragated_listp + 0 * WSIZE = 0x800000000
+head = 0x800000000
+head -> (nil)
+segragated_listp + 1 * WSIZE = 0x800000004
+head = 0x800000004
+head -> (nil)
+segragated_listp + 2 * WSIZE = 0x800000008
+head = 0x800000008
+head -> (nil)
+segragated_listp + 3 * WSIZE = 0x80000000c
+head = 0x80000000c
+head -> (nil)
+segragated_listp + 4 * WSIZE = 0x800000010
+head = 0x800000010
+head -> (nil)
+segragated_listp + 5 * WSIZE = 0x800000014
+head = 0x800000014
+head -> (nil)
+segragated_listp + 6 * WSIZE = 0x800000018
+head = 0x800000018
+head -> (nil)
+segragated_listp + 7 * WSIZE = 0x80000001c
+head = 0x80000001c
+head -> 0x800000030
+cur = 0x800000030
+cur's pred = 0x80000001c
+cur's succ = (nil)
+segragated_listp + 8 * WSIZE = 0x800000020
+head = 0x800000020
+head -> (nil)
+coalesce called by 0x800000030
+prev = 0x800000028
+next = 0x800001030
+prev_alloc = 1
+next_alloc = 1
+size = 4096
+heap_listp = 0x800000028
+malloc called by 16
+adjusted_size = 16
+find_fit called by 16
+head = 0x800000000
+cur = (nil)
+head = 0x800000004
+cur = (nil)
+head = 0x800000008
+cur = (nil)
+head = 0x80000000c
+cur = (nil)
+head = 0x800000010
+cur = (nil)
+head = 0x800000014
+cur = (nil)
+head = 0x800000018
+cur = (nil)
+head = 0x80000001c
+cur = 0x800000030
+find_fit ptr = 0x800000030
+place called by 0x800000030, 16
+coalesce called by 0x800000040
+prev = 0x800000030
+next = 0x800001030
+prev_alloc = 1
+next_alloc = 1
+size = 4080
+Check heap at line 561
+Heap (0x800000028):
+Prologue header: [8:1] footer: [8:1]
+0x800000028: header: [8:1] footer: [8:1]
+0x800000030: header: [16:1] footer: [16:1]
+0x800000040: header: [4080:0] footer: [4080:0]
+Epilogue header: [0:1]
+segragated_listp + 0 * WSIZE = 0x800000000
+head = 0x800000000
+head -> (nil)
+segragated_listp + 1 * WSIZE = 0x800000004
+head = 0x800000004
+head -> (nil)
+segragated_listp + 2 * WSIZE = 0x800000008
+head = 0x800000008
+head -> (nil)
+segragated_listp + 3 * WSIZE = 0x80000000c
+head = 0x80000000c
+head -> (nil)
+segragated_listp + 4 * WSIZE = 0x800000010
+head = 0x800000010
+head -> (nil)
+segragated_listp + 5 * WSIZE = 0x800000014
+head = 0x800000014
+head -> (nil)
+segragated_listp + 6 * WSIZE = 0x800000018
+head = 0x800000018
+head -> (nil)
+segragated_listp + 7 * WSIZE = 0x80000001c
+head = 0x80000001c
+head -> (nil)
+segragated_listp + 8 * WSIZE = 0x800000020
+head = 0x800000020
+head -> (nil)
+Error: free_count != free_count_in_list
+malloc called by 1234
+adjusted_size = 1240
+find_fit called by 1240
+head = 0x800000014
+cur = (nil)
+head = 0x800000018
+cur = (nil)
+head = 0x80000001c
+cur = (nil)
+head = 0x800000020
+cur = (nil)
+new block bp = 0x800001030
+new block size = 4096
+segragated_list_insert called by 0x800001030
+head = 0x80000001c
+GET(head) = 4148
+actual address in head = 0x800001030
+ptr's pred = 0x80000001c
+ptr's succ = (nil)
+Check heap at line 445
+Heap (0x800000028):
+Prologue header: [8:1] footer: [8:1]
+0x800000028: header: [8:1] footer: [8:1]
+Error: Header and Footer do not match
+0x800000030: header: [16:1] footer: [1084056136:1]
+段错误 (核心已转储)
+```
+
+```bash
+Using default tracefiles in ./traces/
+Measuring performance with a cycle counter.
+Processor clock rate ~= 2000.0 MHz
+mm_init called
+heap_listp = 0x800000000
+heap_listp = 0x800000030
+new block bp = 0x800000030
+new block size = 4096
+segragated_list_insert called by 0x800000030
+head = 0x80000001c
+GET(head) = 52
+actual address in head = 0x800000030
+ptr's pred = 0x80000001c
+ptr's succ = (nil)
+Check heap at line 445
+Heap (0x800000030):
+Bad prologue header
+Prologue header: [4096:0] footer: [4096:0]
+0x800000030: header: [4096:0] footer: [4096:0]
+Epilogue header: [0:1]
+segragated_listp + 0 * WSIZE = 0x800000000
+head = 0x800000000
+head -> (nil)
+segragated_listp + 1 * WSIZE = 0x800000004
+head = 0x800000004
+head -> (nil)
+segragated_listp + 2 * WSIZE = 0x800000008
+head = 0x800000008
+head -> (nil)
+segragated_listp + 3 * WSIZE = 0x80000000c
+head = 0x80000000c
+head -> (nil)
+segragated_listp + 4 * WSIZE = 0x800000010
+head = 0x800000010
+head -> (nil)
+segragated_listp + 5 * WSIZE = 0x800000014
+head = 0x800000014
+head -> (nil)
+segragated_listp + 6 * WSIZE = 0x800000018
+head = 0x800000018
+head -> (nil)
+segragated_listp + 7 * WSIZE = 0x80000001c
+head = 0x80000001c
+head -> 0x800000030
+cur = 0x800000030
+cur's pred = 0x80000001c
+cur's succ = (nil)
+segragated_listp + 8 * WSIZE = 0x800000020
+head = 0x800000020
+head -> (nil)
+Check heap at line 364
+Heap (0x800000030):
+Bad prologue header
+Prologue header: [4096:0] footer: [4096:0]
+0x800000030: header: [4096:0] footer: [4096:0]
+Epilogue header: [0:1]
+segragated_listp + 0 * WSIZE = 0x800000000
+head = 0x800000000
+head -> (nil)
+segragated_listp + 1 * WSIZE = 0x800000004
+head = 0x800000004
+head -> (nil)
+segragated_listp + 2 * WSIZE = 0x800000008
+head = 0x800000008
+head -> (nil)
+segragated_listp + 3 * WSIZE = 0x80000000c
+head = 0x80000000c
+head -> (nil)
+segragated_listp + 4 * WSIZE = 0x800000010
+head = 0x800000010
+head -> (nil)
+segragated_listp + 5 * WSIZE = 0x800000014
+head = 0x800000014
+head -> (nil)
+segragated_listp + 6 * WSIZE = 0x800000018
+head = 0x800000018
+head -> (nil)
+segragated_listp + 7 * WSIZE = 0x80000001c
+head = 0x80000001c
+head -> 0x800000030
+cur = 0x800000030
+cur's pred = 0x80000001c
+cur's succ = (nil)
+segragated_listp + 8 * WSIZE = 0x800000020
+head = 0x800000020
+head -> (nil)
+coalesce called by 0x800000030
+prev = 0x800000028
+next = 0x800001030
+prev_alloc = 0
+next_alloc = 1
+size = 4096
+segragated_list_insert called by 0x800000028
+head = 0x80000001c
+heap_listp = 0x800000030
+malloc called by 16
+adjusted_size = 16
+find_fit called by 16
+head = 0x800000000
+cur = (nil)
+head = 0x800000004
+cur = (nil)
+head = 0x800000008
+cur = 0x8000ffffc
+head = 0x80000000c
+cur = (nil)
+head = 0x800000010
+cur = (nil)
+head = 0x800000014
+cur = (nil)
+head = 0x800000018
+cur = (nil)
+head = 0x80000001c
+cur = 0x800000028
+find_fit ptr = 0x800000028
+place called by 0x800000028, 16
+coalesce called by 0x800000038
+prev = 0x800000028
+next = 0x800001028
+prev_alloc = 1
+next_alloc = 0
+size = 4080
+段错误 (核心已转储)
+```
+
+```bash
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/short1.rep
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver
+段错误 (核心已转储)
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/short2.rep
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/short1-bal.rep
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/short2-bal.rep
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/stty.rep
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/tty.rep
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/xterm.rep
+段错误 (核心已转储)
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/alaska.rep
+段错误 (核心已转储)
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/bash.rep
+段错误 (核心已转储)
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ ./mdriver -c ./traces/expr.rep
+vectorpikachu@vectorpikachu-virtual-machine:~/Desktop/malloclab-handout$ 
+```
